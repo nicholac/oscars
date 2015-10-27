@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Similar Geohash's</title>
+
+    <!-- Make me responsive! -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/bootstrap3/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/css/leaflet.css" rel="stylesheet">
+    <!--link href="/static/bootstrap3/css/bootstrap-responsive.css" rel="stylesheet">-->
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../static/bootstrap3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/c3.min.css">
+    <link rel="stylesheet" href="../static/css/c3.css">
+
+    <!-- JAVASCRIPT LIBS -->
+    <script type="text/javascript" src="../static/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="../static/bootstrap3/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../static/js/leaflet.js"></script>
+    <script type="text/javascript" src="../static/js/d3.min.js"></script>
+    <script type="text/javascript" src="../static/js/d3.js"></script>
+    <script type="text/javascript" src="../static/js/c3.js"></script>
+    <script type="text/javascript" src="../static/js/c3.min.js"></script>
+    <script type="text/javascript" src="../static/js/d3PopupGraph.js"></script>
+    <style>
+
+<style>
+
+    .map { height: 180px; }
+    .node {
+	  border: solid 1px white;
+	  font: 10px sans-serif;
+	  line-height: 12px;
+	  overflow: hidden;
+	  position: absolute;
+	  text-indent: 2px;
+	}
+	.svg {
+	  position: absolute;
+	}
+
+</style>
+<body>
+
+
+<div class="container">
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">I</a>
+                <a class="navbar-brand" href="#">Like</a>
+                <a class="navbar-brand" href="#">Pints</a>
+            </div>
+        </div>
+    </nav>
+    <div class="row">
+        <div class="col-lg-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="mappanel"><i class="icon-ok">Map - Shows Related Geohashs (Click to select a location to Query)</i>
+                        </div>
+                        <div class="panel-body">
+                                <div id="map" style="width: 550px; height: 400px"></div>
+                                <script>
+                                    //Get the panel width
+                                    var w = $('#mappanel').css('width');
+                                    var pad = $('#mappanel').css('panel-body');
+                                    var newW = parseInt(w, 10) - 30;
+                                    var newW = newW + "px";
+                                    $('#map').css('width', newW);
+                                    var map = L.map('map').setView([48.505, 3.0], 3);
+                                    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                        maxZoom: 18,
+                                        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                                            '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                                            'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                                        id: 'examples.map-i875mjb7'
+                                    }).addTo(map);
+                                    //Make feature group
+                                    var featGroup = L.featureGroup([]).addTo(map);
+                                    //Stash it in the DOM
+                                    var fGroupArr = new Array();
+                                    fGroupArr["hashGp"] = featGroup;
+                                    $("body").data(fGroupArr, 0);
+                                    //Map Click action
+                                    map.on('click', onMapClick);
+
+                                    function onMapClick(e){
+								    	//For handling a map click
+								    	//alert(e.latlng);
+								    	//Now make it a geohash and ajax the resulting sim cells
+								    };
+
+                                </script>
+                        </div>
+                    </div>
+            </div>
+            <div class="col-lg-6">
+            	<div class="row">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="searchpanel"><i class="icon-ok">Search Params</i>
+                        </div>
+                        <div class="panel-body">
+                                <div class="input-group">
+                                  <span class="input-group-btn">
+        						  <button class="btn btn-success" type="button" id="ghashBtn">Go</button>
+        						  <script>
+									$( "#ghashBtn" ).click(function() {
+										getHash();
+									});
+        						  </script>
+        						  </span>
+								  <input type="text" class="form-control" placeholder="Enter geohash" id="ghash">
+								</div>
+								<div class="input-group">
+                                  <span class="input-group-btn">
+        						  <button class="btn btn-danger" type="button" id="midBtn">Go</button>
+	        						  <script>
+										$( "#midBtn" ).click(function() {
+											getHash();
+										});
+	        						  </script>
+        						  </span>
+								  <input type="text" class="form-control" placeholder="Enter ID"  id="mid">
+								</div>
+								<div class="input-group">
+                                  <span class="input-group-btn">
+        						  <button class="btn btn-default" type="button" id="otherBtn">Go</button>
+        						  	<script>
+										$( "#otherBtn" ).click(function() {
+											getHash();
+										});
+        						  	</script>
+        						  </span>
+								  <input type="text" class="form-control" placeholder="Enter Other"  id="other">
+								</div>
+                        </div>
+                    </div>
+            </div>
+            <div class="row">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="graphpanel"><i class="icon-ok">Time Graph</i>
+                        </div>
+                        <div class="panel-body">
+                        	<div class="chart" id="chart">
+                        		<script>
+                        			var chart = c3.generate({
+									    data: {
+									        x: 'x',
+									//        xFormat: '%Y%m%d', // 'xFormat' can be used as custom format of 'x'
+									        columns: [
+									            ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06'],
+									//            ['x', '20130101', '20130102', '20130103', '20130104', '20130105', '20130106'],
+									            ['data1', 30, 200, 100, 400, 150, 250],
+									            ['data2', 130, 340, 200, 500, 250, 350]
+									        ]
+									    },
+									    axis: {
+									        x: {
+									            type: 'timeseries',
+									            tick: {
+									                format: '%Y-%m-%d'
+									            }
+									        }
+									    }
+									});
+
+									setTimeout(function () {
+									    chart.load({
+									        columns: [
+									            ['data3', 400, 500, 450, 700, 600, 500]
+									        ]
+									    });
+									}, 1000);
+                        		</script>
+                        	</div>
+                        </div>
+                    </div>
+             </div>
+           </div>
+        </div>
+    </div>
+    <script>
+    function onEachFeature (feature, layer) {
+    	//Bind some popup content when feature clicked
+	    //layer.bindPopup(feature.properties.hash);
+		//Create a new Div in the popup
+	    var div_popup = L.DomUtil.create('div', 'd3Popup');
+	    div_popup.innerHTML = "<a>BD Gram</a>";
+
+    	var popup = L.popup()
+		    .setContent(div_popup)
+
+	    layer.on('click', function (e) {
+
+			//Make a new DIV in the popup
+			//var newdiv1 = $( "<div class='d3g' id='d3Pop'/><a>append</a>" )
+	    	//$( div_popup ).append( newdiv1 );
+
+			//Open where clicked
+			popup.setLatLng(e.latlng);
+			popup.openOn(map);
+
+		    //Load in the d3 Graph
+		    //d3.select(d3Elem).append("svg").attr("width", 50).attr("height", 50).append("circle").attr("cx", 25).attr("cy", 25).attr("r", 25).style("fill", "purple");
+		    bdGram(layer, div_popup);
+		    popup.update();
+
+        });
+    };
+
+
+    function getHash() {
+    	var b = map.getBounds().toBBoxString();
+    	//Get the values
+        var mid = $( "#mid" ).val();
+        var ghash = $( "#ghash" ).val();
+        //Get DOM Data stash
+        var fGroupArr = $("body").data();
+        var fg = fGroupArr["hashGp"];
+        //Clear the map using it
+        map.removeLayer(fg);
+
+        //Ajax for getting geojson
+        $.ajax({
+            url: "/rnddata?id="+mid+"&ghash="+ghash,
+            dataType: "json"
+        }).done(function(data) {
+            //Build the graph as a callback
+            console.log(data["success"]);
+            var feats = data["features"]
+            console.log(feats[0]["properties"]);
+            //console.log(feats);
+            //Define some colours based on strength
+            var gjLayer = L.geoJson(feats, {
+            	onEachFeature: onEachFeature,
+			    style: function(feature) {
+			    	if (feature.properties.seed == true){
+			    		//Colour it black
+			    		return {color: "#000000"};
+			    	}
+			    	else if (feature.properties.strength > 0.5){
+			    		return {color: "#CC0099"};
+			    	}
+			    	else{
+			        switch (feature.properties.strength) {
+			            case 0.0: return {color: "#FFEBE6"};
+			            case 0.1: return {color: "#FFAD99"};
+			            case 0.2: return {color: "#FF8566"};
+			            case 0.3: return {color: "#FF5C33"};
+			            case 0.4: return {color: "#B8B800"};
+			            case 0.5: return {color: "#FFFF00"};
+			            case 0.6: return {color: "#C2FF85"};
+			            case 0.7: return {color: "#A3FF47"};
+			            case 0.8: return {color: "#4DB84D"};
+			            case 0.9: return {color: "#009900"};
+			            case 1.0: return {color: "#0033CC"};
+			            default: return {color: "#0033CC"};
+			        	}
+			      	}
+			    }
+				});
+			//Make Feature Group
+			var featGroup = L.featureGroup([gjLayer]).addTo(map);
+			//Fit to the added data
+			map.fitBounds(featGroup.getBounds());
+			//Stash the array
+			fGroupArr["hashGp"] = featGroup;
+            $("body").data(fGroupArr, 0);
+            })
+      .fail(function() {console.log("Get data error"); })
+      .always(function() { });
+
+    }
+
+    </script>
+</body>
+</html>
+
+
+
+

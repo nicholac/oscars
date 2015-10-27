@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Oscars Picker</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="../static/css/3-col-portfolio.css" rel="stylesheet">
+
+    <!-- JS -->
+    <script src="../static/js/jquery-1.11.1.min.js"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <li>
+                        	<a href="#" id='watched'>Watched</a>
+	                    </li>
+	                    <li>
+	                        <a href="#" id='towatch'>To Watch</a>
+	                    </li>
+	                    <li>
+	                        <a href="#" id='all'>All</a>
+						</li>
+                        <script>
+							$( "#towatch" ).click(function() {
+								getOscars('no');
+
+							});
+							$( "#all" ).click(function() {
+								getOscars('all');
+							});
+							$( "#watched" ).click(function() {
+								getOscars('yes');
+							});
+						  </script>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container" id="galleryC">
+
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Academy Award Winners
+                    <small>1927 - 2015</small>
+                </h1>
+                <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+				  Pick Next Film!
+				</button>
+				  <script>
+					$( "#pickBtn" ).click(function() {
+						$.ajax({
+				            url: "/picker",
+				            dataType: "json"
+				        }).done(function(data) {
+							console.log(data.name);
+							var nam = data.name.replace(/ /g,'');
+							$("#Rocky").style("border: 2px solid black");
+				        });
+					});
+				  </script>
+				  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					  <div class="modal-dialog" role="document">
+					    <div class="modal-content">
+					      <div class="modal-header">
+					        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					        <h4 class="modal-title" id="myModalLabel">Chosen Film</h4>
+					      </div>
+					      <div class="modal-body" id="pick">
+					      <script>
+					        $.ajax({
+					            url: "/picker",
+					            dataType: "json"
+					        }).done(function(data) {
+								var nam = data.name.replace(/ /g,'');
+								var mod = '<img src=\"../static/data/posters/'+data.postName+'\"><p>'+data.synopsis+'</p>'
+								$("#pick").html(mod);
+								$("#myModalLabel").text(data.name);
+					        });
+					      </script>
+					      </div>
+					      <div class="modal-footer">
+					        <button type="button" class="btn btn-default" data-dismiss="modal">Amazon</button>
+					      </div>
+					    </div>
+					  </div>
+					</div>
+            </div>
+        </div>
+        <!-- /.row -->
+
+		<script>
+		//$(document).ready(getOscars('no'));
+		function getOscars(watched) {
+				var colCnt = 0;
+				$.ajax({
+		            url: "/oscarsData?watched="+watched,
+		            dataType: "json"
+		        }).done(function(data) {
+
+					 var currRow = 0;
+					 var numRows = data.length/3;
+					 var numLeft = data.length-(numRows*3);
+					 var dataIdx = 0;
+					 while (currRow < numRows) {
+					 	var rowId = "row"+currRow;
+					 	$('#galleryC').append('<div class="row" id="'+rowId+'"></div>');
+						while (colCnt < 3) {
+							var nam = data[dataIdx].name;
+							var uid = data[dataIdx].uid;
+							$('#'+rowId).append('<div class=\"col-md-4 portfolio-item\"  id="'+nam.replace(/ /g,'')+'"><a href=\"'+data[dataIdx].wikiURL+'\"><img class=\"img-responsive\" src=\"../static/data/posters/'+data[dataIdx].postName+'" alt=\"\"></a><h3><a href=\"'+data[dataIdx].wikiURL+'\">'+nam+'</a></h3><p>'+data[dataIdx].synopsis+'</p><button type=\"button\" class=\"btn btn-primary btn-lg\" id=\"'+data[dataIdx]+'_btn\" onclick=\"watched('+uid+');\">Watched</button></div>');
+							colCnt++;
+							dataIdx++;
+							};
+						colCnt = 0;
+						currRow++;
+					 }
+					 //Do the remainders
+					 var rowId = "row"+currRow++;
+					 $('#galleryC').append('<div class="row" id="'+rowId+'"></div>');
+					 colCnt = 0;
+					while (colCnt < numLeft) {
+						console.log(dataIdx, colCnt, numLeft);
+						var nam = data[dataIdx].name;
+						$('#'+rowId).append('<div class=\"col-md-4 portfolio-item\" id="'+nam.replace(/ /g,'')+'"><a href=\"'+data[dataIdx].wikiURL+'\"><img class=\"img-responsive\" src=\"../static/data/posters/'+data[dataIdx].postName+'" alt=\"\"></a><h3><a href=\"'+data[dataIdx].wikiURL+'\">'+nam+'</a></h3><p>'+data[dataIdx].synopsis+'</p><button type=\"button\" class=\"btn btn-primary btn-lg\" id=\"'+data[dataIdx]+'_btn\" onclick=\"watched('+uid+');\">Watched</button></div>');
+						colCnt++;
+						dataIdx++;
+						};
+					colCnt = 0;
+					console.log(dataIdx, data.length);
+
+					$('#galleryC').append('<footer><div class="row"><div class="col-lg-12"><p>Copyright &copy; Your Website 2014</p></div></div></footer>');
+
+				});
+			};
+
+			function watched(uid){
+				$.ajax({
+		            url: "/oscarsWatched?uid="+uid,
+		            dataType: "json"
+		        }).done(function(data) {
+		        	//Remove it somehow here
+		        	console.log(data);
+		        });
+			};
+		</script>
+
+
+    </div>
+    <!-- /.container -->
+
+    <!-- jQuery -->
+    <script src="../static/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../static/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
